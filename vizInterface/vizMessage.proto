@@ -1,0 +1,63 @@
+/* vizMessage is a protobuffer message template to relay messages from the 
+ * Basilisk Sim to an external visualization application. */
+syntax = "proto3";
+package vizProtobufferMessage;
+   
+//A VizMessage should contain all Basilisk Sim messages needed to visualize a single time step
+message VizMessage{
+   message TimeStamp{
+      int64 frameNumber = 1; //Current message's index
+      double simTimeElapsed = 2; //Elapsed time since sim start 
+   }
+   //CelestialBody messages will carry position, velocity, and rotation data for all celestial bodies to visualized in the current run (including sun, planets, and moon)
+   message CelestialBody{
+      string bodyName = 1;
+      repeated double position = 2;   //SpicePlanetStateSimMsg.PositionVector
+      repeated double velocity = 3;   //SpicePlanetStateSimMsg.VelocityVector
+      repeated double rotation = 4;  //SpicePlanetStateSimMsg.J20002Pfix 
+   }
+  
+   //Spacecraft message carry spacecraft position, velocity, and rotation data and proto messages for actuators and sensors
+   message Spacecraft{
+      string spacecraftName = 1;
+      repeated double position = 2;  //SCPlusStatesSimMsg.r_BN_N
+      repeated double velocity = 3;  //SCPlusStatesSimMsg.v_BN_N
+      repeated double rotation = 4;  //SCPlusStatesSimMsg.sigma_B
+      
+      repeated ReactionWheel reactionWheels = 5;
+      repeated Thruster thrusters = 6;
+      repeated CoarseSunSensor CSS = 7;
+      repeated StarTracker starTrackers = 8;
+   }
+   message ReactionWheel{
+      repeated double position = 2;
+      repeated double spinAxisVector = 4;
+      double wheelSpeed = 5;  //RWSpeedIntMsg.wheelSpeeds
+      double wheelTorque = 6; //RWArrayTorqueIntMsg.motorTorque
+   }
+   message Thruster{
+      repeated double position = 2; 
+      repeated double thrustVector = 4;
+      double currentThrust = 5;
+      double maxThrust = 6;
+      int32 thrusterGroupID = 7;
+   }
+  message CoarseSunSensor{
+      repeated double position = 2;
+      repeated double normalVector = 4;
+      double currentMsmt = 5;
+      int32 CSSGroupID = 7;
+   }
+  
+   message StarTracker{
+      repeated double position = 2;
+      repeated double rotation = 4;
+      double fieldOfViewHeight = 5;
+      double fieldOfViewWidth = 6;  
+      int32 starTrackerGroupID = 7;
+   } 
+   
+   TimeStamp currentTime = 1;
+   repeated CelestialBody celestialBodies = 2;
+   repeated Spacecraft spacecraft = 3;
+}
